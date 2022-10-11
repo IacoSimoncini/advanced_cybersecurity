@@ -56,12 +56,14 @@ def file_divisi(files):
             list_files.append([])
         
         for f in files:
-            if "_" in f:
+            
+            
+            if "2021" in f and m != 1 and m!=12:
                 m=int(f.split("_")[2])
-                if "2021" in f and m != 1 and m!=12:
-                    list_files[m+2].append(f)
-                elif "2020" in f and m>5 and m<10:
-                    list_files[m-6].append(f)
+                list_files[m+2].append(f)
+            elif "2020" in f and m>5 and m<10:
+                m=int(f.split("_")[2])
+                list_files[m-6].append(f)
 
         filew = open(path_files_divisi, "w")
         for i in list_files:
