@@ -3,19 +3,9 @@ import paramiko
 import configparser
 import os
 
-config = configparser.ConfigParser()
-config.read('config.ini')
 
-hostname = config['SSH']['Host']
-port = int(config['SSH']['Port'])
-username = config['SSH']['Username']
-password = config['SSH']['Password']
 
-path_VOL250 = config['PATH']['PathVOL250']
-path_dir_compressed = config['PATH']['PathDirCompressed']
-path_files_divisi = config['PATH']['PathFileDivisi']
-path_dir_uncompressed = config['PATH']['PathDirUncompressed']
-path_datasetGARR = config['PATH']['PathDatasetGARR']
+
 
 c_days=[
 [14, 10, 23, 11, 6, 24, 16, 18, 20, 13], #GIUGNO20        
@@ -35,7 +25,8 @@ c_days=[
 ] 
 #I MESI CON PARENTESI INSIEME FANNO UN MESE INTERO
 
-def file_divisi(files):
+def file_divisi(files,path_files_divisi):
+
     exists = os.path.exists(path_files_divisi)
     if exists:
         isempty = os.stat(path_files_divisi).st_size == 0
@@ -73,7 +64,15 @@ def file_divisi(files):
         print("ho scritto!")
         return list_files
 
-def download():
+def download(config):
+    hostname = config['SSH']['Host']
+    port = int(config['SSH']['Port'])
+    username = config['SSH']['Username']
+    password = config['SSH']['Password']
+
+    path_VOL250 = config['PATH']['PathVOL250']
+    path_dir_compressed = config['PATH']['PathDirCompressed']
+    path_files_divisi = config['PATH']['PathFileDivisi']
     with paramiko.SSHClient() as ssh:
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(port=port, hostname=hostname, username=username, password=password)
@@ -81,7 +80,7 @@ def download():
         with ssh.open_sftp() as sftp:\
 
             files = sftp.listdir(path_VOL250)
-            files_divisi = file_divisi(files)
+            files_divisi = file_divisi(files,path_files_divisi)
             count=0
 
             for i in range(0,14):
@@ -91,26 +90,3 @@ def download():
                             sftp.get(path_VOL250 + filename, path_dir_compressed + filename) 
                 count+=len(c_days[i])
                 print("completamento: "+str(count/120*100)+"%")
-def unzip():
-    import lzma
-    files = [f for f in os.listdir(path_dir_compressed) if os.path.isfile(os.path.join(path_dir_compressed, f))]
-    filew = open(path_datasetGARR,"a")
-    count = 0
-
-    for filename in files:
-        try:
-            file = lzma.open(path_dir_compressed + filename, mode='rt', encoding='utf-8')
-            count += 1
-            if count % 36 == 0:
-                print("scrittura al "+str(count/2880*100)+"%")
-            countLine = 0
-            domPos = random.randint(0,9)
-            for line in file:            
-                if domPos == countLine:
-                    filew.write(line.split(";")[5]+",")   
-                countLine += 1
-                if countLine == 10:
-                    domPos = random.randint(0,9) 
-                    countLine = 0       
-        except EOFError:
-            pass

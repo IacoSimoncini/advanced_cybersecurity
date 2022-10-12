@@ -1,4 +1,11 @@
-from download import download, unzip 
+from download import download
+from unzip import unzip
+from clean import clean
+import configparser
+
+
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 def main():
     while(True):
@@ -13,9 +20,9 @@ def main():
         print("\nYour choice: ")
         key=input()
         if key=="d":
-            download()
+            download(config)
         elif key=="u":
-            unzip()
+            unzip(config)
         elif key=="c":
             pass
         elif key=="e":
