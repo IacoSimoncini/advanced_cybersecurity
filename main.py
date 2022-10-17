@@ -3,32 +3,37 @@ from unzip import unzip
 from clean import clean
 import configparser
 
-
-config = configparser.ConfigParser()
-config.read('config.ini')
+def menu():
+    print("-----------------------------MENU-------------------------------")
+    print("choose the task to be performed by pressing the associated key: ")
+    print("d) download file GARR")
+    print("u) unzip and create dataset GARR")
+    print("c) clean dataset GARR")
+    print("e) exit")
+    print("\nSpecial thanks for the layout to Aldo Drago Franconi")
+    print("----------------------------------------------------------------")
+    print("\nYour choice: ")
 
 def main():
-    while(True):
-        print("-----------------------------MENU-------------------------------")
-        print("choose the task to be performed by pressing the associated key :")
-        print("d) download file GARR")
-        print("u) unzip and create dataset GARR")
-        print("c) clean dataset GARR")
-        print("e) exit")
-        print("\nSpecial thanks for the layout to Aldo Drago Franconi")
-        print("----------------------------------------------------------------")
-        print("\nYour choice: ")
+    try:
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        menu()
         key=input()
-        if key=="d":
-            download(config)
-        elif key=="u":
-            unzip(config)
-        elif key=="c":
-            pass
-        elif key=="e":
-            break
-        else:
-            print("wrong key...retry")
+        while(key!="e"):
+            if key=="d":
+                download(config)
+            elif key=="u":
+                unzip(config)
+            elif key=="c":               
+                #clean(config)
+                pass
+            else:
+                print("wrong key...retry")
+            menu()
+            key=input()
+    except FileNotFoundError:
+        print("can't find config.ini, you can find how to create it in readMe")
 
 if __name__ == "__main__":
     main()
