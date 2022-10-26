@@ -3,8 +3,7 @@ __pycache__
 compressed
 uncompressed
 config.ini
-file_divisi.txt
-datasetGARR.txt
 datasetGARR.zip
 datasetGARRCleaned.txt
 datasetGARRCleaned.zip
+*.txt

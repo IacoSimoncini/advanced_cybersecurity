@@ -1,6 +1,9 @@
+
 import lzma
+
 import random
 import os
+from time import sleep
 
 c_hours=[
 [18, 17, 22, 15, 23, 1, 2, 16, 10, 5], #JUNE20
@@ -24,21 +27,41 @@ c_days=[
 [19, 28, 26, 25, 7, 23, 1, 16, 15, 13], #JULY20
 [30, 25, 2, 9, 12, 29, 14, 27, 24, 6], #AUGUST20
 [1, 9, 8], #SEPTEMBER20 (3)
-[27], #FEBRUARY21 (2)  #change 28
+[27], #FEBRUARY21 (1)  
 [22, 7, 23, 29, 11, 6, 27, 13, 9, 15], #MARCH21
-[1, 20, 7, 11, 28, 5, 24, 8, 0, 16], #APRIL21  #change3
+[1, 20, 7, 11, 28, 5, 24, 8, 0, 16], #APRIL21 
 [17, 5, 23, 28, 8, 11, 16, 3, 6, 18], #MAY21
 [4, 23, 6, 3, 22, 17, 7, 28, 29, 14], #JUNE21
 [13, 16, 11, 27, 29, 17, 24, 28, 23, 0], #JULY21
 [24, 11, 2, 12, 10, 27, 29, 26, 25, 7], #AUGUST21
 [4, 27, 3, 26, 16, 9, 0, 20, 25, 5], #SEPTEMEBR21
 [0, 26, 22, 4, 17, 27, 15, 9, 20, 12], #OCTOBER21
-[13, 4, 16, 11, 12, 7] #NOVEMBER 21 (5)   
+[13, 4, 16, 11, 12, 7] #NOVEMBER 21 (6)   
 ] 
-def no_reverse_lookup(domain):
-    if domain.split('.')[0].isdigit():
+def domain_isclean(domain):
+    lung=len(domain)
+    if lung>2 and lung<100:
+        return False
+    domain_splitted=domain.split('.')
+    count_num=0
+    for i,d in enumerate(domain_splitted):
+        if i>3:
+            break
+        if d.isdigit():
+            count_num+=1
+        
+    if count_num>1:
         return False
     return True
+    
+def write_domains(domain_set,path_datasetGARR,total_domains):
+    filew = open(path_datasetGARR,"w")
+
+    for i,domain in enumerate(domain_set):
+        filew.write(domain+"\n")
+        if i%200000==0:
+            print(str(round(i/total_domains*100))+"% "+"of domains name written ")
+
 
 def unzip(config):
     
@@ -46,47 +69,51 @@ def unzip(config):
     path_datasetGARR = config['PATH']['PathDatasetGARR']
     
     files = [f for f in os.listdir(path_dir_compressed) if os.path.isfile(os.path.join(path_dir_compressed, f))]
-    filew = open(path_datasetGARR,"w")
+    
     count = 0
-    total_domain=0
-    lista=[]
+   
+    
+    domain_set=set()
+
     for filename in files:
         try:
             
-            m=int(filename.split("_")[2])+2
-            if "2020" in filename:
-                m=int(filename.split("_")[2])-6
             
-            g=int(filename.split("_")[3])-1
-            h=int(filename.split("_")[4].split(".")[0])
             try:
-                if (h == c_hours[m][c_days[m].index(g)]):
-                    lista.append(str(m)+"|"+str(g)+"|"+str(h))
-              
 
+                            
+                file = lzma.open(path_dir_compressed + filename, mode='rt', encoding='utf-8')
+                    
+                    
+                count += 1
+                    
+                if count % 5 == 0:
+                    print(str(round(count/450*100))+"% "+"of dataset read ")
+                countLine = 0
+                domPos = random.randint(0,9)
+                for line in file:            
+                    if domPos == countLine:
+                        domain=line.split(";")[5]
+                        domain=domain.lower()
+                       
+                        if domain_isclean(domain):               
+                           
+                            domain_set.add()
+                              
+                    countLine += 1
+                    if countLine == 10:
+                        domPos = random.randint(0,9) 
+                        countLine = 0     
+                
 
-
-                    file = lzma.open(path_dir_compressed + filename, mode='rt', encoding='utf-8')
-                    count += 1
-                    if count % 6 == 0:
-                        print(str(count/120*100)+"% "+"of dataset written")
-                    countLine = 0
-                    domPos = random.randint(0,9)
-                    for line in file:            
-                        if domPos == countLine:
-                            domain=line.split(";")[5]
-                            lung=len(domain)
-                            if lung>2 and lung<100:
-                                if no_reverse_lookup(domain):               
-                                    filew.write(domain+"\n")
-                                    total_domain+=1   
-                        countLine += 1
-                        if countLine == 10:
-                            domPos = random.randint(0,9) 
-                            countLine = 0     
+                    
             except:
                 pass
         except EOFError:
             pass
-    print(str(total_domain))
-    print(lista)
+    total_domains=len(domain_set)
+    print("All the files are been read. Writing of "+ str(total_domains)+ " Domains name will be start in 10 seconds unless you stop it.")
+    sleep(10)
+    print("write started")
+    write_domains(domain_set,path_datasetGARR,total_domains)
+

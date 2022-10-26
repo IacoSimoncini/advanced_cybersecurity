@@ -1,6 +1,7 @@
 from download import download
 from unzip import unzip
-from clean import clean
+from remove import remove
+from transform import transform
 import configparser
 
 def menu():
@@ -8,9 +9,9 @@ def menu():
     print("choose the task to be performed by pressing the associated key: ")
     print("d) download file GARR")
     print("u) unzip and create dataset GARR")
-    print("c) clean dataset GARR")
+    #print("c) remove duplicates dataset GARR")
+    print("t) transform dataset in uni-bi-trigrams")
     print("e) exit")
-    print("\nSpecial thanks for the layout to Aldo Drago Franconi")
     print("----------------------------------------------------------------")
     print("\nYour choice: ")
 
@@ -25,9 +26,11 @@ def main():
                 download(config)
             elif key=="u":
                 unzip(config)
-            elif key=="c":               
-                #clean(config)
+            elif key=="r":               
+                #remove(config)
                 pass
+            elif key=="t":
+                transform(config)
             else:
                 print("wrong key...retry")
             menu()
