@@ -5,42 +5,9 @@ import random
 import os
 from time import sleep
 
-c_hours=[
-[18, 17, 22, 15, 23, 1, 2, 16, 10, 5], #JUNE20
-[21, 1, 10, 22, 2, 16, 20, 19, 18, 7], #JULY20
-[23, 3, 0, 18, 13, 4, 17, 19, 14, 18], #AUGUST20
-[20, 0, 11], #SEPTEMBER20
-[22, 16], #FEBRUARY21
-[4, 13, 7, 11, 0, 3, 14, 9, 6, 12], #MARCH21
-[6, 19, 5, 7, 21, 20, 9, 6, 12, 1], #APRIL21
-[3, 20, 9, 1, 10, 16, 13, 2, 7, 21], #MAY21
-[13, 10, 5, 21, 3, 1, 16, 8, 19, 6], #JUNE21
-[22, 16, 4, 0, 17, 12, 19, 7, 15, 5], #JULY21
-[19, 9, 0, 12, 11, 22, 21, 15, 6, 18], #AUGUST21
-[7, 19, 14, 11, 12, 8, 22, 1, 6, 18], #SEPTEMBER21
-[13, 9, 21, 23, 8, 16, 17, 5, 10, 11], #OCTOBER21
-[7, 23, 14, 6, 8, 11] #NOVEMBER21
-]
-
-c_days=[
-[14, 10, 23, 11, 6, 24, 16, 18, 20, 13], #JUNE20        
-[19, 28, 26, 25, 7, 23, 1, 16, 15, 13], #JULY20
-[30, 25, 2, 9, 12, 29, 14, 27, 24, 6], #AUGUST20
-[1, 9, 8], #SEPTEMBER20 (3)
-[27], #FEBRUARY21 (1)  
-[22, 7, 23, 29, 11, 6, 27, 13, 9, 15], #MARCH21
-[1, 20, 7, 11, 28, 5, 24, 8, 0, 16], #APRIL21 
-[17, 5, 23, 28, 8, 11, 16, 3, 6, 18], #MAY21
-[4, 23, 6, 3, 22, 17, 7, 28, 29, 14], #JUNE21
-[13, 16, 11, 27, 29, 17, 24, 28, 23, 0], #JULY21
-[24, 11, 2, 12, 10, 27, 29, 26, 25, 7], #AUGUST21
-[4, 27, 3, 26, 16, 9, 0, 20, 25, 5], #SEPTEMEBR21
-[0, 26, 22, 4, 17, 27, 15, 9, 20, 12], #OCTOBER21
-[13, 4, 16, 11, 12, 7] #NOVEMBER 21 (6)   
-] 
 def domain_isclean(domain):
     lung=len(domain)
-    if lung>2 and lung<100:
+    if lung<3 or lung>99:
         return False
     domain_splitted=domain.split('.')
     count_num=0
@@ -49,7 +16,8 @@ def domain_isclean(domain):
             break
         if d.isdigit():
             count_num+=1
-        
+    if "in_addr" in domain:
+        return False
     if count_num>1:
         return False
     return True
@@ -62,18 +30,21 @@ def write_domains(domain_set,path_datasetGARR,total_domains):
         if i%200000==0:
             print(str(round(i/total_domains*100))+"% "+"of domains name written ")
 
+def read_GARR(path_data):
+    filer = open(path_data,"r")
+    return set(filer.readlines())
 
 def unzip(config):
     
-    path_dir_compressed = config['PATH']['PathDirCompressed']
+    path_dir_compressed = config['PATH']['PathDirCompressed']#config['PATH']['PathExtraData'] 
     path_datasetGARR = config['PATH']['PathDatasetGARR']
     
     files = [f for f in os.listdir(path_dir_compressed) if os.path.isfile(os.path.join(path_dir_compressed, f))]
     
     count = 0
    
-    
     domain_set=set()
+    #domain_set=read_GARR(path_datasetGARR)
 
     for filename in files:
         try:
@@ -88,27 +59,42 @@ def unzip(config):
                 count += 1
                     
                 if count % 5 == 0:
-                    print(str(round(count/450*100))+"% "+"of dataset read ")
+                    print(str(round(count/506*100))+"% "+"of dataset read ")
                 countLine = 0
                 domPos = random.randint(0,9)
+                resPos= random.randint(0,9)
+                if resPos==domPos:
+                    resPos=abs(resPos-1)
+                
                 for line in file:            
                     if domPos == countLine:
                         domain=line.split(";")[5]
+                        domain=domain.split(",")[0]
                         domain=domain.lower()
                        
-                        if domain_isclean(domain):               
-                           
-                            domain_set.add()
-                              
+                        check=domain_isclean(domain)
+                        if check:                                          
+                            domain_set.add(domain)
+                    if resPos==countLine:
+                        reserve=line.split(";")[5]
+                        reserve=reserve.split(",")[0]
+                        reserve=reserve.lower()
                     countLine += 1
                     if countLine == 10:
+                        if not check:                            
+                            if domain_isclean(reserve):
+                                domain_set.add(reserve)
                         domPos = random.randint(0,9) 
-                        countLine = 0     
+                        resPos= random.randint(0,9)
+                        if resPos==domPos:
+                            resPos=abs(resPos-1)
+                        countLine = 0   
+                          
                 
 
                     
-            except:
-                pass
+            except Exception as e:
+                print(e)
         except EOFError:
             pass
     total_domains=len(domain_set)

@@ -1,3 +1,7 @@
+import re
+import string
+
+
 def commute_to_unigram(dataset,path):
     with open(dataset, 'r') as f:
         line = f.read()
@@ -44,17 +48,24 @@ def commute_to_trigram(dataset,path):
 
 def commute_to_123gram(dataset,path_unigram,path_bigram,path_trigram):
     with open(dataset, 'r') as f:
-        uni=open(path_unigram, "w")
+        uni=open(path_unigram, "w",encoding="utf-8")
         bi=open(path_bigram, "w")
         tri=open(path_trigram, "w")
+        count=0
         try:
             
             lines=f.readlines()
+            sym = re.escape(string.punctuation)
+
             for line in lines:
                 line=line.replace(".","")
-                uni.write(",".join(list(line)))
-                bi.write(",".join([line[i:i+2] for i in range(0, len(line)-2 , 1)]))
-                tri.write(",".join([line[i:i+3] for i in range(0, len(line)-3 , 1)]))
+                #line=re.sub(r'['+sym+']', '',line) decomment this line to remove all punctuation (and comment line above)
+                uni.write(" ".join(list(line)[:-1])+"\n")
+                bi.write(" ".join([line[i:i+2] for i in range(0, len(line)-2 , 1)])+"\n")
+                tri.write(" ".join([line[i:i+3] for i in range(0, len(line)-3 , 1)])+"\n")
+                count+=1
+                if count%200000==0:
+                    print(str(round(count/len(lines)*100))+"%"+" completed")
         except EOFError:
             pass
 def transform(config):

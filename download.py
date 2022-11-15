@@ -1,14 +1,31 @@
 from operator import truediv
-import random
+
 import paramiko
-import configparser
 import os
 
+"""
+DECOMMENTA E RUNNA PER SINGOLO DOWNLOAD VELOCE
 
+import configparser
 
+config = configparser.ConfigParser()
+config.read('config.ini')
+hostname = config['SSH']['Host']
+port = int(config['SSH']['Port'])
+username = config['SSH']['Username']
+password = config['SSH']['Password']
+path_dir_compressed = config['PATH']['PathExtraData']
+path_VOL250 = config['PATH']['PathVOL250']
+with paramiko.SSHClient() as ssh:
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(port=port, hostname=hostname, username=username, password=password)
+    with ssh.open_sftp() as sftp:\
+        sftp.get(path_VOL250 + "pdns_2019_10_21_14.log.xz", path_dir_compressed + "pdns_2019_10_21_14.log.xz")""" 
 
 
 c_days=[
+[30, 8, 6, 3, 16, 18, 20, 9, 25, 12],#JULY19
+[13, 11, 17, 27, 8, 0, 25, 10, 22, 21],#AUGUST19
 [4, 28, 1, 0, 29, 18, 11, 17, 14, 6],#SEPTEMBER19
 [2, 17, 10, 15, 6, 1, 27, 13, 8, 20],#OCTOBER19
 [18, 10, 19, 16, 14, 15, 1, 28, 20, 21], #MAY20
@@ -28,6 +45,8 @@ c_days=[
 [13, 4, 16, 11, 12, 7] #NOVEMBER 21 (6)
 ]
 c_hours=[
+[21, 8, 12, 19, 22, 3, 2, 18, 10, 1],#JULY19
+[19, 17, 18, 0, 2, 22, 12, 21, 15, 13],#AUGUST19
 [18, 17, 4, 12, 11, 15, 21, 23, 2, 16],#SEPTEMBER19
 [21, 10, 5, 1, 15, 14, 17, 12, 0, 7],#OCTOBER19
 [1, 7, 15, 22, 9, 10, 14, 0, 11, 16], #MAY20
@@ -58,26 +77,26 @@ def files_separator(files,path_separated_files):
     if not isempty and exists:
         file = open(path_separated_files, "r")
         list_files = []
-        for i in range(14):
+        for i in range(len(c_days)):
             list_files.append([])
-        for i in range(14):
+        for i in range(len(c_days)):
             list_files[i] = file.readline().split(", ")
         file.close()
         return list_files
     else:
         list_files = []
-        for i in range(14):
+        for i in range(len(c_days)):
             list_files.append([])
         
         for f in files:
             if "pdns" in f:
                 m=int(f.split("_")[2])
                 if "2021" in f and m != 1 and m!=12:
-                    list_files[m+5].append(f)
+                    list_files[m+7].append(f)
                 elif "2020" in f and m>4 and m<10:
-                    list_files[m-3].append(f)
-                elif "2019" in f and m>8 and m<11:
-                    list_files[m-9].append(f)
+                    list_files[m-1].append(f)
+                elif "2019" in f and m>6 and m<11:
+                    list_files[m-7].append(f)
 
         filew = open(path_separated_files, "w")
         for i in list_files:
@@ -117,7 +136,7 @@ def download(config):
             separated_files = files_separator(files,path_separated_files)
             count=0
         
-            for m in range(0,14):
+            for m in range(0, len(c_days)): 
                 
                 for filename in separated_files[m]:
                     if not os.path.exists(path_dir_compressed + filename):
@@ -130,5 +149,5 @@ def download(config):
                                         sftp.get(path_VOL250 + filename, path_dir_compressed + filename) 
                                 except:
                                     pass
-                count+=len(c_days[m])
-                print(str(count/450*100)+"% "+"of files downloaded")
+                count+=1
+                print(str(count/len(c_days)*100)+"% "+"of files downloaded")  
